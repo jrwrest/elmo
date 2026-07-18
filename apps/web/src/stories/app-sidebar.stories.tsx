@@ -10,30 +10,18 @@
  *  - Whitelabel Onboarding (brand not yet onboarded)
  */
 import type { Meta } from "@storybook/react";
-import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar";
+import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { setMockBrand } from "./_mocks/use-brands";
-import { setMockAuth } from "./_mocks/use-auth";
-import {
-	setMockClientConfig,
-	type ClientConfig,
-} from "./_mocks/config-client";
+import { type ClientConfig, setMockClientConfig } from "./_mocks/config-client";
 import { setMockRouteContext } from "./_mocks/tanstack-router";
+import { setMockAuth } from "./_mocks/use-auth";
+import { setMockBrand } from "./_mocks/use-brands";
 
 // ---------------------------------------------------------------------------
 // Shared mock data
 // ---------------------------------------------------------------------------
 
-const CHART_COLORS = [
-	"#2563eb",
-	"#efb118",
-	"#3ca951",
-	"#ff725c",
-	"#a463f2",
-	"#ff8ab7",
-	"#38b2ac",
-	"#9c6b4e",
-];
+const CHART_COLORS = ["#2563eb", "#efb118", "#3ca951", "#ff725c", "#a463f2", "#ff8ab7", "#38b2ac", "#9c6b4e"];
 
 const onboardedBrand = {
 	id: "brand-1",
@@ -83,6 +71,18 @@ const demoConfig: ClientConfig = {
 	analytics: {},
 };
 
+const tradeSitesConfig: ClientConfig = {
+	...localConfig,
+	branding: {
+		name: "TradeSites AEO",
+		icon: "/brand/tradesites-aeo.png",
+		url: "https://aeo.tradesites.ai",
+		parentName: "TradeSites",
+		parentUrl: "https://www.tradesites.ai",
+		chartColors: CHART_COLORS,
+	},
+};
+
 const whitelabelConfig: ClientConfig = {
 	mode: "whitelabel",
 	features: {
@@ -110,7 +110,11 @@ const whitelabelAdminConfig: ClientConfig = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function configureMocks(config: ClientConfig, brand: any, auth?: Parameters<typeof setMockAuth>[0]) {
+function configureMocks(
+	config: ClientConfig,
+	brand: Parameters<typeof setMockBrand>[0],
+	auth?: Parameters<typeof setMockAuth>[0],
+) {
 	setMockClientConfig(config);
 	setMockBrand(brand);
 	setMockRouteContext({ clientConfig: config });
@@ -144,13 +148,7 @@ const authedUser = (name: string, email: string, seed: string) => ({
  *  2. Scoped style overrides swap `h-svh` / `min-h-svh` for `h-full` /
  *     `min-h-full` so the sidebar fits the container's height.
  */
-function SidebarFrame({
-	children,
-	label,
-}: {
-	children: React.ReactNode;
-	label: string;
-}) {
+function SidebarFrame({ children, label }: { children: React.ReactNode; label: string }) {
 	return (
 		<div
 			className="sidebar-story-container relative h-[600px] w-full max-w-[1200px] border rounded-lg overflow-hidden bg-background"
@@ -169,9 +167,7 @@ function SidebarFrame({
 			<SidebarProvider>
 				{children}
 				<SidebarInset>
-					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-						{label}
-					</div>
+					<div className="flex items-center justify-center h-full text-muted-foreground text-sm">{label}</div>
 				</SidebarInset>
 			</SidebarProvider>
 		</div>
@@ -188,14 +184,25 @@ export default {
 
 /** Local (self-hosted) — all nav visible, admin access, self-registered user */
 export const Local = () => {
-	configureMocks(
-		localConfig,
-		onboardedBrand,
-		authedUser("Local Admin", "admin@localhost", "local-admin"),
-	);
+	configureMocks(localConfig, onboardedBrand, authedUser("Local Admin", "admin@localhost", "local-admin"));
 
 	return (
 		<SidebarFrame label="Local — Self-hosted, full admin">
+			<AppSidebar isAdmin={true} hasReportAccess={true} />
+		</SidebarFrame>
+	);
+};
+
+/** TradeSites AEO - custom-branded local auth with no upstream attribution */
+export const TradeSitesLocal = () => {
+	configureMocks(
+		tradeSitesConfig,
+		onboardedBrand,
+		authedUser("TradeSites Admin", "admin@tradesites.ai", "tradesites-admin"),
+	);
+
+	return (
+		<SidebarFrame label="TradeSites AEO - Custom local deployment">
 			<AppSidebar isAdmin={true} hasReportAccess={true} />
 		</SidebarFrame>
 	);

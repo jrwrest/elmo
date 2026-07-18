@@ -1,12 +1,9 @@
-import { useState, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
-import html2canvas from "html2canvas-pro";
 import { useRouteContext } from "@tanstack/react-router";
 import type { ClientConfig } from "@workspace/config/types";
-import {
-	ChartExportPreview,
-	type ChartExportPreviewProps,
-} from "@/components/chart-export-preview";
+import html2canvas from "html2canvas-pro";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ChartExportPreview, type ChartExportPreviewProps } from "@/components/chart-export-preview";
 
 export function useChartExport(fileName: string) {
 	const [isExporting, setIsExporting] = useState(false);
@@ -16,7 +13,6 @@ export function useChartExport(fileName: string) {
 
 	const context = useRouteContext({ strict: false }) as { clientConfig?: ClientConfig };
 	const branding = context.clientConfig?.branding;
-	const mode = context.clientConfig?.mode;
 
 	const handleExport = useCallback(
 		async (data: Omit<ChartExportPreviewProps, "branding">) => {
@@ -30,7 +26,7 @@ export function useChartExport(fileName: string) {
 					name: branding?.name,
 					icon: branding?.icon,
 					parentUrl: branding?.parentUrl,
-					isWhitelabel: mode === "whitelabel",
+					url: branding?.url,
 					chartColors: branding?.chartColors ?? [],
 				},
 			};
@@ -62,7 +58,7 @@ export function useChartExport(fileName: string) {
 				setIsExporting(false);
 			}
 		},
-		[branding, mode, fileName],
+		[branding, fileName],
 	);
 
 	const portal = exportData
