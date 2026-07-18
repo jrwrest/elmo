@@ -217,6 +217,12 @@ export const ENV_REGISTRY: EnvVarSpec[] = [
 		description: "When true, creates missing AEO users from verified TradeSites login handoffs.",
 	},
 	{
+		name: "TRADESITES_AEO_SSO_START_URL",
+		scope: "server",
+		requiredBy: "optional",
+		description: "TradeSites protected route that starts the AEO SSO handoff.",
+	},
+	{
 		name: "ENVIRONMENT",
 		scope: "server",
 		requiredBy: "optional",
@@ -257,12 +263,6 @@ export const ENV_REGISTRY: EnvVarSpec[] = [
 		scope: "client",
 		requiredBy: ["whitelabel"],
 		description: "Parent application URL (e.g., 'https://app.example.com/').",
-	},
-	{
-		name: "VITE_TRADESITES_AEO_SSO_START_URL",
-		scope: "client",
-		requiredBy: "optional",
-		description: "TradeSites protected route that starts the AEO SSO handoff.",
 	},
 	{
 		name: "VITE_OPTIMIZATION_URL_TEMPLATE",

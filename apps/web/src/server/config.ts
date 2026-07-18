@@ -51,6 +51,7 @@ export const getClientConfig = createServerFn({ method: "GET" }).handler(async (
 		defaultDelayHours: getDefaultDelayHours(),
 		canRegister,
 		hasUsers,
+		tradesitesAeoSsoStartUrl: process.env.TRADESITES_AEO_SSO_START_URL ?? process.env.VITE_TRADESITES_AEO_SSO_START_URL,
 	};
 });
 

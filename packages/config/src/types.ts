@@ -112,6 +112,8 @@ export interface ClientConfig {
 	canRegister: boolean;
 	/** Whether any user account exists. */
 	hasUsers: boolean;
+	/** TradeSites protected route that starts the AEO browser login handoff. */
+	tradesitesAeoSsoStartUrl?: string;
 }
 
 // ============================================================================

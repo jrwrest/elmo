@@ -13,7 +13,6 @@ interface ImportMetaEnv {
 	readonly VITE_APP_URL?: string;
 	readonly VITE_APP_PARENT_NAME?: string;
 	readonly VITE_APP_PARENT_URL?: string;
-	readonly VITE_TRADESITES_AEO_SSO_START_URL?: string;
 	readonly VITE_OPTIMIZATION_URL_TEMPLATE?: string;
 	readonly VITE_ONBOARDING_REDIRECT_URL_TEMPLATE?: string;
 	readonly VITE_CHART_COLORS?: string;
@@ -66,6 +65,7 @@ declare global {
 			readonly DEFAULT_BRAND_DOMAINS?: string;
 			readonly TRADESITES_AEO_SSO_SECRET?: string;
 			readonly TRADESITES_AEO_SSO_AUTO_PROVISION?: string;
+			readonly TRADESITES_AEO_SSO_START_URL?: string;
 			readonly ENVIRONMENT?: string;
 			readonly DBOS_SYSTEM_DATABASE_URL?: string;
 			readonly SENTRY_DSN?: string;

@@ -43,7 +43,7 @@ function LoginPage() {
 	const context = useRouteContext({ strict: false }) as { clientConfig?: ClientConfig };
 	const mode = context.clientConfig?.mode;
 	const canRegister = context.clientConfig?.canRegister ?? false;
-	const tradesitesSsoStartUrl = import.meta.env.VITE_TRADESITES_AEO_SSO_START_URL;
+	const tradesitesSsoStartUrl = context.clientConfig?.tradesitesAeoSsoStartUrl;
 
 	if (mode === "whitelabel") {
 		return <SSOLogin returnTo={returnTo} />;
