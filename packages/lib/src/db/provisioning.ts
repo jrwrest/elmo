@@ -14,7 +14,7 @@
  * call is a bug and should fail at the database layer rather than
  * silently rewriting rows.
  */
-import { count, eq, or } from "drizzle-orm";
+import { and, count, eq, or } from "drizzle-orm";
 import { db } from "./db";
 import { member, organization, user } from "./schema";
 
@@ -38,7 +38,7 @@ export async function countUsers(): Promise<number> {
  * onboarding wizard, which is what the UI actually surfaces), and a
  * stable id makes URLs like `/app/default` predictable.
  */
-const LOCAL_ORG = {
+export const LOCAL_ORG = {
 	id: "default",
 	name: "Default",
 	slug: "default",
@@ -64,6 +64,41 @@ export async function provisionLocalOrg(input: { userId: string }): Promise<{ or
 		userId: input.userId,
 		role: "admin",
 		createdAt: new Date(),
+	});
+
+	return { orgId: LOCAL_ORG.id };
+}
+
+export async function ensureLocalOrgMembership(input: {
+	userId: string;
+	role?: "admin" | "member";
+}): Promise<{ orgId: string }> {
+	await db.transaction(async (tx) => {
+		await tx
+			.insert(organization)
+			.values({
+				id: LOCAL_ORG.id,
+				name: LOCAL_ORG.name,
+				slug: LOCAL_ORG.slug,
+				createdAt: new Date(),
+			})
+			.onConflictDoNothing();
+
+		const existingMember = await tx
+			.select({ id: member.id })
+			.from(member)
+			.where(and(eq(member.organizationId, LOCAL_ORG.id), eq(member.userId, input.userId)))
+			.limit(1);
+
+		if (existingMember.length === 0) {
+			await tx.insert(member).values({
+				id: crypto.randomUUID(),
+				organizationId: LOCAL_ORG.id,
+				userId: input.userId,
+				role: input.role ?? "member",
+				createdAt: new Date(),
+			});
+		}
 	});
 
 	return { orgId: LOCAL_ORG.id };
@@ -121,10 +156,7 @@ async function findUniqueOrgId(baseSlug: string): Promise<string> {
  * The brand row itself is the caller's responsibility; provisioning only
  * handles the auth-level (org + admin membership) bits.
  */
-export async function provisionAdditionalLocalOrg(input: {
-	userId: string;
-	name: string;
-}): Promise<{ orgId: string }> {
+export async function provisionAdditionalLocalOrg(input: { userId: string; name: string }): Promise<{ orgId: string }> {
 	const baseSlug = slugifyOrgName(input.name);
 	const orgId = await findUniqueOrgId(baseSlug);
 

@@ -7,7 +7,7 @@
  */
 
 import { type SSOOptions, sso } from "@better-auth/sso";
-import { type BetterAuthOptions, betterAuth } from "better-auth";
+import { type BetterAuthOptions, type BetterAuthPlugin, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, customSession, organization } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
@@ -30,6 +30,7 @@ export interface CreateAuthOptions {
 	 * `databaseHooks.user.create.before` guard instead.
 	 */
 	disableSignUp?: boolean;
+	plugins?: BetterAuthPlugin[];
 }
 
 export function createAuth(options?: CreateAuthOptions) {
@@ -111,6 +112,7 @@ export function createAuth(options?: CreateAuthOptions) {
 					session,
 				};
 			}),
+			...(options?.plugins ?? []),
 			tanstackStartCookies(),
 		],
 	});

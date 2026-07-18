@@ -20,6 +20,7 @@ import FullPageCard from "@/components/full-page-card";
 export const Route = createFileRoute("/auth/login")({
 	validateSearch: z.object({
 		returnTo: z.string().optional(),
+		ssoError: z.string().optional(),
 	}),
 	component: LoginPage,
 });
@@ -38,16 +39,23 @@ function safeReturnTo(returnTo: string | undefined): string {
 }
 
 function LoginPage() {
-	const { returnTo } = Route.useSearch();
+	const { returnTo, ssoError } = Route.useSearch();
 	const context = useRouteContext({ strict: false }) as { clientConfig?: ClientConfig };
 	const mode = context.clientConfig?.mode;
 	const canRegister = context.clientConfig?.canRegister ?? false;
+	const tradesitesSsoStartUrl = import.meta.env.VITE_TRADESITES_AEO_SSO_START_URL;
 
 	if (mode === "whitelabel") {
 		return <SSOLogin returnTo={returnTo} />;
 	}
 
-	return <EmailPasswordLogin returnTo={returnTo} isDemo={mode === "demo"} canRegister={canRegister} />;
+	if (tradesitesSsoStartUrl && !ssoError) {
+		return <TradesitesSsoLogin returnTo={returnTo} startUrl={tradesitesSsoStartUrl} />;
+	}
+
+	return (
+		<EmailPasswordLogin returnTo={returnTo} isDemo={mode === "demo"} canRegister={canRegister} ssoError={ssoError} />
+	);
 }
 
 function SSOLogin({ returnTo }: { returnTo?: string }) {
@@ -91,14 +99,42 @@ function SSOLogin({ returnTo }: { returnTo?: string }) {
 	return <FullPageCard title="Signing in..." subtitle="Redirecting to your identity provider" />;
 }
 
+function TradesitesSsoLogin({ returnTo, startUrl }: { returnTo?: string; startUrl: string }) {
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		try {
+			const url = new URL(startUrl);
+			url.searchParams.set("return_to", safeReturnTo(returnTo));
+			window.location.assign(url.toString());
+		} catch {
+			setError("TradeSites sign-in is not configured correctly.");
+		}
+	}, [returnTo, startUrl]);
+
+	if (error) {
+		return (
+			<FullPageCard title="Sign in">
+				<Alert variant="destructive">
+					<AlertDescription>{error}</AlertDescription>
+				</Alert>
+			</FullPageCard>
+		);
+	}
+
+	return <FullPageCard title="Signing in..." subtitle="Redirecting to TradeSites" />;
+}
+
 export function EmailPasswordLogin({
 	returnTo,
 	isDemo,
 	canRegister,
+	ssoError,
 }: {
 	returnTo?: string;
 	isDemo?: boolean;
 	canRegister?: boolean;
+	ssoError?: string;
 }) {
 	const navigate = useNavigate();
 	const [email, setEmail] = useState(isDemo ? "demo@elmohq.com" : "");
@@ -134,6 +170,11 @@ export function EmailPasswordLogin({
 		<FullPageCard title="Sign in" subtitle={isDemo ? undefined : "Enter your email and password to continue"}>
 			<form onSubmit={handleSubmit} className="space-y-4 w-full">
 				{isDemo && <DemoCredentialsCallout />}
+				{ssoError && (
+					<Alert variant="destructive">
+						<AlertDescription>TradeSites sign-in could not be completed. Please sign in directly.</AlertDescription>
+					</Alert>
+				)}
 				{error && (
 					<Alert variant="destructive">
 						<AlertDescription>{error}</AlertDescription>
