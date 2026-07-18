@@ -1,12 +1,9 @@
 import type { Meta } from "@storybook/react";
 import { ChartExportPreview, type ChartExportPreviewProps } from "@/components/chart-export-preview";
-import { setMockRouteContext, MockRouteContextProvider } from "./_mocks/tanstack-router";
-import { setMockClientConfig, type ClientConfig } from "./_mocks/config-client";
+import { type ClientConfig, setMockClientConfig } from "./_mocks/config-client";
+import { MockRouteContextProvider, setMockRouteContext } from "./_mocks/tanstack-router";
 
-const CHART_COLORS = [
-	"#2563eb", "#efb118", "#3ca951", "#ff725c",
-	"#a463f2", "#ff8ab7", "#38b2ac", "#9c6b4e",
-];
+const CHART_COLORS = ["#2563eb", "#efb118", "#3ca951", "#ff725c", "#a463f2", "#ff8ab7", "#38b2ac", "#9c6b4e"];
 
 const mockBrand = {
 	id: "brand-1",
@@ -19,9 +16,30 @@ const mockBrand = {
 };
 
 const mockCompetitors = [
-	{ id: "comp-1", name: "Competitor Alpha", domain: "alpha.com", brandId: "brand-1", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-	{ id: "comp-2", name: "Competitor Beta", domain: "beta.com", brandId: "brand-1", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-	{ id: "comp-3", name: "Competitor Gamma", domain: "gamma.com", brandId: "brand-1", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+	{
+		id: "comp-1",
+		name: "Competitor Alpha",
+		domain: "alpha.com",
+		brandId: "brand-1",
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
+	{
+		id: "comp-2",
+		name: "Competitor Beta",
+		domain: "beta.com",
+		brandId: "brand-1",
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
+	{
+		id: "comp-3",
+		name: "Competitor Gamma",
+		domain: "gamma.com",
+		brandId: "brand-1",
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
 ];
 
 function generateChartData(days: number) {
@@ -82,7 +100,7 @@ export default {
 export const ElmoDefault = () => {
 	setupMocks();
 	const data = generateChartData(30);
-	const branding = { isWhitelabel: false, chartColors: CHART_COLORS };
+	const branding = { chartColors: CHART_COLORS };
 
 	return (
 		<MockRouteContextProvider value={{ clientConfig: defaultClientConfig }}>
@@ -135,7 +153,6 @@ export const Whitelabel = () => {
 		name: "BrandMonitor Pro",
 		icon: "https://api.dicebear.com/9.x/shapes/svg?seed=brand",
 		parentUrl: "https://agency.example.com",
-		isWhitelabel: true,
 		chartColors: CHART_COLORS,
 	};
 
@@ -163,6 +180,36 @@ export const Whitelabel = () => {
 						brand={mockBrand}
 						competitors={mockCompetitors}
 						branding={whitelabelBranding}
+					/>
+				</Section>
+			</div>
+		</MockRouteContextProvider>
+	);
+};
+
+export const TradeSitesLocal = () => {
+	setupMocks();
+	const data = generateChartData(30);
+	const branding = {
+		name: "TradeSites AEO",
+		icon: "/brand/tradesites-aeo.png",
+		url: "https://aeo.tradesites.ai",
+		parentUrl: "https://www.tradesites.ai",
+		chartColors: CHART_COLORS,
+	};
+
+	return (
+		<MockRouteContextProvider value={{ clientConfig: defaultClientConfig }}>
+			<div className="p-6 space-y-8">
+				<Section label="Custom local deployment - TradeSites only">
+					<ExportPreview
+						promptName="Which solar installers are most visible in AI search?"
+						visibility={88}
+						data={data}
+						lookback="1m"
+						brand={mockBrand}
+						competitors={mockCompetitors}
+						branding={branding}
 					/>
 				</Section>
 			</div>
