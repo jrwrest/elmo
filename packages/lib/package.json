@@ -16,6 +16,8 @@
     "./auth/server": "./src/auth/server.ts",
     "./auth/client": "./src/auth/client.ts",
     "./auth/permissions": "./src/auth/permissions.ts",
+    "./auth/tradesites-sso-token": "./src/auth/tradesites-sso-token.ts",
+    "./auth/tradesites-aeo-sso-server": "./src/auth/tradesites-aeo-sso-server.ts",
     "./constants": "./src/constants.ts",
     "./text-extraction": "./src/text-extraction.ts",
     "./dataforseo": "./src/dataforseo.ts",

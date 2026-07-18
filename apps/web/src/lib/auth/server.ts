@@ -7,9 +7,10 @@
  * This is the single source of truth for the server-side auth object.
  * All server functions, middleware, and route handlers import from here.
  */
-import { createAuth, type CreateAuthOptions } from "@workspace/lib/auth/server";
-import { getWhitelabelAuthOptions } from "@workspace/whitelabel/auth-hooks";
+import { type CreateAuthOptions, createAuth } from "@workspace/lib/auth/server";
+import { tradesitesAeoSso } from "@workspace/lib/auth/tradesites-aeo-sso-server";
 import { countUsers, provisionLocalOrg } from "@workspace/lib/db/provisioning";
+import { getWhitelabelAuthOptions } from "@workspace/whitelabel/auth-hooks";
 
 /**
  * Local mode hooks: enforce "exactly one user, with an admin org created
@@ -26,9 +27,7 @@ function getLocalAuthOptions(): CreateAuthOptions {
 				create: {
 					before: async () => {
 						if ((await countUsers()) > 0) {
-							throw new Error(
-								"This instance is already bootstrapped. Sign in with the existing account instead.",
-							);
+							throw new Error("This instance is already bootstrapped. Sign in with the existing account instead.");
 						}
 					},
 					after: async (user) => {
@@ -50,7 +49,10 @@ function getDeploymentAuthOptions(): CreateAuthOptions | undefined {
 			// pre-existing user.
 			return { disableSignUp: true };
 		default:
-			return getLocalAuthOptions();
+			return {
+				...getLocalAuthOptions(),
+				plugins: [tradesitesAeoSso()],
+			};
 	}
 }
 
