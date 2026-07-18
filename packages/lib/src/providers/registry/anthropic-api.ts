@@ -38,12 +38,13 @@ async function runAnthropic(prompt: string, model: string, options?: ProviderOpt
 		});
 	}
 
-	const makeRequest = () => client.messages.create({
-		model,
-		max_tokens: 4000,
-		messages: [{ role: "user", content: prompt }],
-		...(tools.length > 0 ? { tools } : {}),
-	});
+	const makeRequest = () =>
+		client.messages.create({
+			model,
+			max_tokens: 4000,
+			messages: [{ role: "user", content: prompt }],
+			...(tools.length > 0 ? { tools } : {}),
+		});
 
 	let response = await makeRequest();
 
@@ -74,9 +75,7 @@ async function runAnthropic(prompt: string, model: string, options?: ProviderOpt
 		return {
 			...block,
 			content: block.content.map((r: any) =>
-				r.type === "web_search_result"
-					? { type: r.type, url: r.url, title: r.title }
-					: r,
+				r.type === "web_search_result" ? { type: r.type, url: r.url, title: r.title } : r,
 			),
 		};
 	});
@@ -110,7 +109,9 @@ function extractAnthropicCitations(content: Anthropic.Messages.ContentBlock[]): 
 							domain: parsed.hostname.replace(/^www\./, ""),
 							citationIndex: idx++,
 						});
-					} catch (e) { console.warn(`Anthropic: skipping invalid citation URL: ${cit.url}`, e); }
+					} catch (e) {
+						console.warn(`Anthropic: skipping invalid citation URL: ${cit.url}`, e);
+					}
 				}
 			}
 		}
@@ -128,7 +129,9 @@ function extractAnthropicCitations(content: Anthropic.Messages.ContentBlock[]): 
 							domain: parsed.hostname.replace(/^www\./, ""),
 							citationIndex: idx++,
 						});
-					} catch (e) { console.warn(`Anthropic: skipping invalid search result URL: ${result.url}`, e); }
+					} catch (e) {
+						console.warn(`Anthropic: skipping invalid search result URL: ${result.url}`, e);
+					}
 				}
 			}
 		}
@@ -158,13 +161,12 @@ export const anthropicApi: Provider = {
 		const result = await generateText({
 			model: getAnthropicLanguageModel(DEFAULT_RESEARCH_MODEL),
 			...(webSearch ? { tools: { web_search: anthropic.tools.webSearch_20250305({ maxUses: 5 }) } } : {}),
-			experimental_output: Output.object({ schema }),
+			output: Output.object({ schema }),
 			prompt,
 		});
 		return {
-			object: result.experimental_output as T,
+			object: result.output as T,
 			modelVersion: DEFAULT_RESEARCH_MODEL,
 		};
 	},
 };
-

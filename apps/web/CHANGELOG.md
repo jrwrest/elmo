@@ -1,5 +1,44 @@
 # @workspace/web
 
+## 0.2.16
+
+### Patch Changes
+
+- Updated dependencies [91de584]
+  - @workspace/lib@0.2.16
+  - @workspace/whitelabel@0.2.16
+  - @workspace/deployment@0.2.16
+  - @workspace/api-spec@0.2.16
+  - @workspace/config@0.2.16
+  - @workspace/og@0.2.16
+  - @workspace/ui@0.2.16
+
+## 0.2.15
+
+### Patch Changes
+
+- 43d23a3: Ensure the overview charts use the same timezone-specific x-axis.
+  - @workspace/api-spec@0.2.15
+  - @workspace/config@0.2.15
+  - @workspace/deployment@0.2.15
+  - @workspace/lib@0.2.15
+  - @workspace/og@0.2.15
+  - @workspace/ui@0.2.15
+  - @workspace/whitelabel@0.2.15
+
+## 0.2.14
+
+### Patch Changes
+
+- bb674b9: Onboarding brand analysis now runs in the background and is more resilient to failures, avoiding timeouts on slow analyses.
+  - @workspace/api-spec@0.2.14
+  - @workspace/config@0.2.14
+  - @workspace/deployment@0.2.14
+  - @workspace/lib@0.2.14
+  - @workspace/og@0.2.14
+  - @workspace/ui@0.2.14
+  - @workspace/whitelabel@0.2.14
+
 ## 0.2.13
 
 ### Patch Changes

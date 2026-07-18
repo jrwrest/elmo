@@ -18,41 +18,31 @@ function loadFont(path: string): ArrayBuffer {
 const fonts = [
 	{
 		name: "Titan One",
-		data: loadFont(
-			"@fontsource/titan-one/files/titan-one-latin-400-normal.woff2",
-		),
+		data: loadFont("@fontsource/titan-one/files/titan-one-latin-400-normal.woff2"),
 		style: "normal" as const,
 		weight: 400 as const,
 	},
 	{
 		name: "Geist Sans",
-		data: loadFont(
-			"@fontsource/geist-sans/files/geist-sans-latin-500-normal.woff2",
-		),
+		data: loadFont("@fontsource/geist-sans/files/geist-sans-latin-500-normal.woff2"),
 		style: "normal" as const,
 		weight: 500 as const,
 	},
 	{
 		name: "Geist Sans",
-		data: loadFont(
-			"@fontsource/geist-sans/files/geist-sans-latin-600-normal.woff2",
-		),
+		data: loadFont("@fontsource/geist-sans/files/geist-sans-latin-600-normal.woff2"),
 		style: "normal" as const,
 		weight: 600 as const,
 	},
 	{
 		name: "Geist Sans",
-		data: loadFont(
-			"@fontsource/geist-sans/files/geist-sans-latin-700-normal.woff2",
-		),
+		data: loadFont("@fontsource/geist-sans/files/geist-sans-latin-700-normal.woff2"),
 		style: "normal" as const,
 		weight: 700 as const,
 	},
 	{
 		name: "Geist Mono",
-		data: loadFont(
-			"@fontsource/geist-mono/files/geist-mono-latin-500-normal.woff2",
-		),
+		data: loadFont("@fontsource/geist-mono/files/geist-mono-latin-500-normal.woff2"),
 		style: "normal" as const,
 		weight: 500 as const,
 	},
@@ -93,8 +83,7 @@ function PagePoster() {
 					display: "flex",
 					position: "absolute",
 					inset: 0,
-					backgroundImage:
-						"radial-gradient(rgba(0,0,0,0.07) 1.4px, transparent 1.4px)",
+					backgroundImage: "radial-gradient(rgba(0,0,0,0.07) 1.4px, transparent 1.4px)",
 					backgroundSize: "44px 44px",
 				}}
 			/>
@@ -104,8 +93,7 @@ function PagePoster() {
 					display: "flex",
 					position: "absolute",
 					inset: 0,
-					backgroundImage:
-						"radial-gradient(ellipse 80% 70% at 85% 10%, rgba(37,99,235,0.14) 0%, transparent 65%)",
+					backgroundImage: "radial-gradient(ellipse 80% 70% at 85% 10%, rgba(37,99,235,0.14) 0%, transparent 65%)",
 				}}
 			/>
 			{/* ghost "e" — same watermark device the OG image uses, blue at low
@@ -206,8 +194,7 @@ function YouTubeThumbnail() {
 					display: "flex",
 					position: "absolute",
 					inset: 0,
-					backgroundImage:
-						"radial-gradient(rgba(0,0,0,0.11) 1.8px, transparent 1.8px)",
+					backgroundImage: "radial-gradient(rgba(0,0,0,0.11) 1.8px, transparent 1.8px)",
 					backgroundSize: "34px 34px",
 				}}
 			/>
@@ -216,8 +203,7 @@ function YouTubeThumbnail() {
 					display: "flex",
 					position: "absolute",
 					inset: 0,
-					backgroundImage:
-						"radial-gradient(ellipse 70% 60% at 100% 100%, rgba(37,99,235,0.18) 0%, transparent 60%)",
+					backgroundImage: "radial-gradient(ellipse 70% 60% at 100% 100%, rgba(37,99,235,0.18) 0%, transparent 60%)",
 				}}
 			/>
 
@@ -365,10 +351,7 @@ function YouTubeThumbnail() {
 	);
 }
 
-async function render(
-	element: React.ReactElement,
-	out: string,
-): Promise<void> {
+async function render(element: React.ReactElement, out: string): Promise<void> {
 	const response = new ImageResponse(element, {
 		width: 1280,
 		height: 720,
@@ -381,15 +364,9 @@ async function render(
 async function main() {
 	// Page poster ships with the site as a static asset so MuxPlayer can use
 	// it as the `poster` while the video metadata loads.
-	await render(
-		<PagePoster />,
-		resolve(__dirname, "../public/demo-poster.png"),
-	);
+	await render(<PagePoster />, resolve(__dirname, "../public/demo-poster.png"));
 	// YouTube variant is hand-uploaded; keep it out of the repo.
-	await render(
-		<YouTubeThumbnail />,
-		resolve(__dirname, "../../../.context/demo-poster-youtube.png"),
-	);
+	await render(<YouTubeThumbnail />, resolve(__dirname, "../../../.context/demo-poster-youtube.png"));
 }
 
 main();

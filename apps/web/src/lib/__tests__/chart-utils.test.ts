@@ -1,6 +1,63 @@
 import { describe, it, expect } from "vitest";
-import { citationDateWindow, applyPerPromptKeyedLVCF } from "@/lib/chart-utils";
+import {
+	citationDateWindow,
+	applyPerPromptKeyedLVCF,
+	getDaysFromLookback,
+	getDefaultLookbackPeriod,
+	generateDateRange,
+	type LookbackPeriod,
+} from "@/lib/chart-utils";
 import { toRoundedPercentages } from "@/lib/domain-categories";
+
+describe("getDaysFromLookback", () => {
+	it.each<[LookbackPeriod, number]>([
+		["1w", 7],
+		["1m", 30],
+		["3m", 90],
+		["6m", 180],
+		["1y", 365],
+		["all", 365 * 2],
+	])("maps %s to %i days", (lookback, days) => {
+		expect(getDaysFromLookback(lookback)).toBe(days);
+	});
+});
+
+describe("getDefaultLookbackPeriod", () => {
+	const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+	it.each<[string, string | null | undefined]>([
+		["null (not loaded)", null],
+		["undefined (not loaded)", undefined],
+	])("defaults to 1m for %s", (_label, input) => {
+		expect(getDefaultLookbackPeriod(input)).toBe("1m");
+	});
+
+	// The cutoff is exclusive: > 7 days of history defaults to 1m, otherwise 1w.
+	it.each<[number, LookbackPeriod]>([
+		[0, "1w"],
+		[3, "1w"],
+		[7, "1w"],
+		[8, "1m"],
+		[90, "1m"],
+	])("returns %s-period default when earliest data is %i days old", (days, expected) => {
+		expect(getDefaultLookbackPeriod(daysAgo(days))).toBe(expected);
+	});
+});
+
+describe("generateDateRange", () => {
+	it.each<[string, string, string, string[]]>([
+		[
+			"inclusive ascending list of YYYY-MM-DD days",
+			"2026-06-10T00:00:00Z",
+			"2026-06-14T00:00:00Z",
+			["2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14"],
+		],
+		["single day when start equals end", "2026-06-10T00:00:00Z", "2026-06-10T00:00:00Z", ["2026-06-10"]],
+		["empty range when end precedes start", "2026-06-14T00:00:00Z", "2026-06-10T00:00:00Z", []],
+	])("produces %s", (_label, start, end, expected) => {
+		expect(generateDateRange(new Date(start), new Date(end))).toEqual(expected);
+	});
+});
 
 describe("citationDateWindow", () => {
 	it("builds a `days`-day current window + contiguous equal-length previous window (UTC)", () => {
@@ -8,7 +65,13 @@ describe("citationDateWindow", () => {
 		expect(w.toDateStr).toBe("2026-06-09");
 		expect(w.fromDateStr).toBe("2026-06-03"); // 7 days inclusive of today
 		expect(w.dateRange).toEqual([
-			"2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09",
+			"2026-06-03",
+			"2026-06-04",
+			"2026-06-05",
+			"2026-06-06",
+			"2026-06-07",
+			"2026-06-08",
+			"2026-06-09",
 		]);
 		expect(w.dateRange).toHaveLength(7);
 		// previous window: same length, ends the day before the current window starts (no gap, no overlap)

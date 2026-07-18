@@ -10,10 +10,11 @@ import { getDeployment } from "@/lib/config/server";
 import { db } from "@workspace/lib/db/db";
 import { brands, prompts, competitors, type BrandWithPrompts, type Brand } from "@workspace/lib/db/schema";
 import { provisionAdditionalLocalOrg } from "@workspace/lib/db/provisioning";
-import { eq, and, count, sql } from "drizzle-orm";
+import { eq, and, count, sql, inArray } from "drizzle-orm";
 import { MAX_COMPETITORS } from "@workspace/lib/constants";
 import { cleanAndValidateDomain } from "@/lib/domain-categories";
 import { validateWebsiteUrl } from "@/lib/brand-website";
+import { normalizeBrandUpdate } from "@/lib/brand-settings";
 import { parseScrapeTargets, selectTargetsForBrand } from "@workspace/lib/providers";
 import type { ModelConfig } from "@workspace/lib/providers";
 
@@ -64,10 +65,7 @@ function getDefaultBrandDomains(): string[] {
 
 async function getBrandWithPromptsFromDb(
 	brandId: string,
-): Promise<
-	| (BrandWithPrompts & { effectiveModels: string[]; effectiveModelConfigs: ModelConfig[] })
-	| undefined
-> {
+): Promise<(BrandWithPrompts & { effectiveModels: string[]; effectiveModelConfigs: ModelConfig[] }) | undefined> {
 	try {
 		const brand = await db.query.brands.findFirst({
 			where: eq(brands.id, brandId),
@@ -98,26 +96,30 @@ async function getBrandWithPromptsFromDb(
 // ============================================================================
 
 /**
- * Get all brands the current user has access to
+ * Get all brands the current user has access to.
+ *
+ * Org scoping is the access-control mechanism: we resolve the orgs the user is
+ * a member of and return only brands owned by those orgs (`brands.organization_id
+ * IN (...)`). A user in org A never sees org B's brands.
  */
 export const getBrands = createServerFn({ method: "GET" }).handler(async () => {
 	const session = await requireAuthSession();
-	const userBrands = await listUserOrganizations(session.user.id);
+	const userOrgs = await listUserOrganizations(session.user.id);
+	const orgIds = userOrgs.map((o) => o.id);
 
-	if (!userBrands || userBrands.length === 0) {
+	if (orgIds.length === 0) {
 		return [];
 	}
 
-	const brandsData = await Promise.all(
-		userBrands.map(async (userBrand) => {
-			const dbBrand = await getBrandWithPromptsFromDb(userBrand.id);
-			return dbBrand ? { ...dbBrand, name: dbBrand.name } : null;
-		}),
-	);
+	const scopedBrands = await db.query.brands.findMany({
+		where: inArray(brands.organizationId, orgIds),
+	});
+
+	const brandsData = await Promise.all(scopedBrands.map((brand) => getBrandWithPromptsFromDb(brand.id)));
 
 	return brandsData.filter(
 		(brand): brand is BrandWithPrompts & { effectiveModels: string[]; effectiveModelConfigs: ModelConfig[] } =>
-			brand !== null,
+			brand !== undefined,
 	);
 });
 
@@ -164,6 +166,9 @@ export const createBrandFn = createServerFn({ method: "POST" })
 			.insert(brands)
 			.values({
 				id: data.brandId,
+				// brandId is the org id from the URL (access verified above); the
+				// brand belongs to that org.
+				organizationId: data.brandId,
 				name: data.brandName,
 				website: urlValidation.formattedUrl,
 				enabled: true,
@@ -225,6 +230,7 @@ export const createBrandWithOrgFn = createServerFn({ method: "POST" })
 
 		await db.insert(brands).values({
 			id: orgId,
+			organizationId: orgId,
 			name: trimmedName,
 			website: urlValidation.formattedUrl,
 			enabled: true,
@@ -251,35 +257,16 @@ export const updateBrandFn = createServerFn({ method: "POST" })
 		const session = await requireAuthSession();
 		await requireOrgAccess(session.user.id, data.brandId);
 
-		const updateData: Partial<Pick<Brand, "name" | "website" | "additionalDomains" | "aliases">> = {};
-
-		if (data.name !== undefined) {
-			if (!data.name.trim()) {
-				throw new Error("Brand name must be a non-empty string");
-			}
-			updateData.name = data.name.trim();
+		const normalized = normalizeBrandUpdate({
+			name: data.name,
+			website: data.website,
+			additionalDomains: data.additionalDomains,
+			aliases: data.aliases,
+		});
+		if (!normalized.ok) {
+			throw new Error(normalized.error);
 		}
-
-		if (data.website !== undefined) {
-			const urlValidation = validateWebsiteUrl(data.website);
-			if (!urlValidation.isValid) {
-				throw new Error(urlValidation.error);
-			}
-			updateData.website = urlValidation.formattedUrl;
-		}
-
-		if (data.additionalDomains !== undefined) {
-			const cleaned = data.additionalDomains.map((d) => cleanAndValidateDomain(d));
-			const invalid = data.additionalDomains.filter((_, i) => !cleaned[i]);
-			if (invalid.length > 0) {
-				throw new Error(`Invalid domain(s): ${invalid.join(", ")}`);
-			}
-			updateData.additionalDomains = [...new Set(cleaned.filter(Boolean) as string[])];
-		}
-
-		if (data.aliases !== undefined) {
-			updateData.aliases = [...new Set(data.aliases.map((a) => a.trim()).filter(Boolean))];
-		}
+		const updateData = normalized.updates;
 
 		const result = await db
 			.update(brands)
@@ -385,12 +372,7 @@ export const addDomainToBrandFn = createServerFn({ method: "POST" })
 				additionalDomains: sql`array_append(${brands.additionalDomains}, ${domain})`,
 				updatedAt: new Date(),
 			})
-			.where(
-				and(
-					eq(brands.id, data.brandId),
-					sql`NOT (${domain} = ANY(${brands.additionalDomains}))`,
-				),
-			)
+			.where(and(eq(brands.id, data.brandId), sql`NOT (${domain} = ANY(${brands.additionalDomains}))`))
 			.returning();
 
 		if (result) return result;

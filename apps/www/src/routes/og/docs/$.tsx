@@ -1,6 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import ImageResponse from "@takumi-rs/image-response/wasm";
-import takumiWasm from "virtual:takumi-wasm";
+import ImageResponse from "@takumi-rs/image-response";
 import titanOne400Data from "virtual:font/titan-one-400";
 import geistSans400Data from "virtual:font/geist-sans-400";
 import geistSans500Data from "virtual:font/geist-sans-500";
@@ -25,7 +24,6 @@ export const Route = createFileRoute("/og/docs/$")({
 					{
 						width: 1200,
 						height: 630,
-						module: takumiWasm,
 						fonts: [
 							{
 								name: "Titan One",
@@ -52,8 +50,7 @@ export const Route = createFileRoute("/og/docs/$")({
 				return new Response(response.body, {
 					headers: {
 						"Content-Type": "image/png",
-						"Cache-Control":
-							"public, max-age=86400, s-maxage=604800",
+						"Cache-Control": "public, max-age=86400, s-maxage=604800",
 					},
 				});
 			},

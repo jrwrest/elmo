@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/node";
+import { getDeployment } from "@workspace/deployment";
 import { getProvider, parseScrapeTargets, validateScrapeTargets } from "@workspace/lib/providers";
 import boss from "./boss";
 import { registerHandlers } from "./handlers";
@@ -39,11 +40,19 @@ async function main() {
 		retryBackoff: true,
 		expireInSeconds: 60 * 15, // 15 minute timeout
 	});
-	await boss.createQueue("generate-report", {
-		retryLimit: 3,
-		retryDelay: 60,
-		retryBackoff: true,
-		expireInSeconds: 60 * 60, // 1 hour timeout for reports
+	if (getDeployment().features.reportGeneration) {
+		await boss.createQueue("generate-report", {
+			retryLimit: 3,
+			retryDelay: 60,
+			retryBackoff: true,
+			expireInSeconds: 60 * 60, // 1 hour timeout for reports
+		});
+	}
+	await boss.createQueue("analyze-brand", {
+		retryLimit: 1,
+		retryDelay: 10,
+		retryBackoff: false,
+		expireInSeconds: 60 * 15, // 15 minute timeout for onboarding brand analysis
 	});
 	await boss.createQueue("schedule-maintenance", {
 		retryLimit: 3,
@@ -61,21 +70,11 @@ async function main() {
 	}
 	console.log("Queues created");
 
-	await boss.schedule(
-		"schedule-maintenance",
-		"*/5 * * * *",
-		{ source: "scheduled" },
-		{ tz: "UTC" },
-	);
+	await boss.schedule("schedule-maintenance", "*/5 * * * *", { source: "scheduled" }, { tz: "UTC" });
 	console.log("Scheduled maintenance job (every 5 minutes)");
 
 	if (process.env.DEPLOYMENT_MODE === "whitelabel") {
-		await boss.schedule(
-			"sync-auth0-memberships",
-			"*/15 * * * *",
-			{ source: "scheduled" },
-			{ tz: "UTC" },
-		);
+		await boss.schedule("sync-auth0-memberships", "*/15 * * * *", { source: "scheduled" }, { tz: "UTC" });
 		console.log("Scheduled Auth0 membership sync (every 15 minutes)");
 	}
 

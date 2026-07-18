@@ -73,11 +73,7 @@ const fonts = [
 // Render helper
 // ---------------------------------------------------------------------------
 
-async function render(
-	element: React.ReactElement,
-	width: number,
-	height: number,
-): Promise<Buffer> {
+async function render(element: React.ReactElement, width: number, height: number): Promise<Buffer> {
 	const response = new ImageResponse(element, {
 		width,
 		height,
@@ -92,10 +88,7 @@ async function render(
 
 function Icon({ fill, bg, size }: { fill: string; bg?: string; size: number }) {
 	return (
-		<div
-			tw="flex items-center justify-center w-full h-full"
-			style={{ backgroundColor: bg || "transparent" }}
-		>
+		<div tw="flex items-center justify-center w-full h-full" style={{ backgroundColor: bg || "transparent" }}>
 			<div
 				style={{
 					fontFamily: "Titan One",
@@ -136,10 +129,7 @@ function MaskableIcon({ size }: { size: number }) {
 
 function Logo({ bg, fontSize }: { bg?: string; fontSize: number }) {
 	return (
-		<div
-			tw="flex items-center justify-center w-full h-full"
-			style={{ backgroundColor: bg || "transparent" }}
-		>
+		<div tw="flex items-center justify-center w-full h-full" style={{ backgroundColor: bg || "transparent" }}>
 			<div
 				style={{
 					fontFamily: "Titan One",
@@ -223,10 +213,7 @@ function PatternBanner({
 	}
 
 	return (
-		<div
-			tw="flex w-full h-full relative overflow-hidden"
-			style={{ backgroundColor: bg, opacity: 0.99 }}
-		>
+		<div tw="flex w-full h-full relative overflow-hidden" style={{ backgroundColor: bg, opacity: 0.99 }}>
 			<div
 				style={{
 					position: "absolute",
@@ -251,10 +238,7 @@ function PatternBanner({
 
 function OgImage({ title }: { title: string }) {
 	return (
-		<div
-			tw="flex w-full h-full relative overflow-hidden"
-			style={{ backgroundColor: "#ffffff" }}
-		>
+		<div tw="flex w-full h-full relative overflow-hidden" style={{ backgroundColor: "#ffffff" }}>
 			<div
 				style={{
 					position: "absolute",
@@ -281,20 +265,18 @@ function OgImage({ title }: { title: string }) {
 				>
 					elmo
 				</div>
-			<div
-				style={{
-					fontFamily: "Geist Sans",
-					fontSize: 44,
-					fontWeight: 500,
-					color: "#1e293b",
-					marginBottom: 16,
-				}}
-			>
-				{title}
-			</div>
-			<div style={{ fontFamily: "Geist Sans", fontSize: 24, color: "#64748b" }}>
-				{DESCRIPTION}
-			</div>
+				<div
+					style={{
+						fontFamily: "Geist Sans",
+						fontSize: 44,
+						fontWeight: 500,
+						color: "#1e293b",
+						marginBottom: 16,
+					}}
+				>
+					{title}
+				</div>
+				<div style={{ fontFamily: "Geist Sans", fontSize: 24, color: "#64748b" }}>{DESCRIPTION}</div>
 			</div>
 
 			<div
@@ -346,10 +328,7 @@ for (const v of iconVariants) {
 
 console.log("\nIcons — Maskable (PWA):");
 for (const size of [64, 128, 256, 512]) {
-	await addFile(
-		`icons/elmo-icon-maskable-${size}.png`,
-		render(<MaskableIcon size={size} />, size, size),
-	);
+	await addFile(`icons/elmo-icon-maskable-${size}.png`, render(<MaskableIcon size={size} />, size, size));
 }
 
 // Logos — always brand blue text
@@ -392,20 +371,12 @@ const sharedBannerStyle = {
 
 await addFile(
 	"banners/twitter-banner.png",
-	render(
-		<PatternBanner width={3000} height={1000} {...sharedBannerStyle} fontScale={0.105} />,
-		3000,
-		1000,
-	),
+	render(<PatternBanner width={3000} height={1000} {...sharedBannerStyle} fontScale={0.105} />, 3000, 1000),
 );
 
 await addFile(
 	"banners/linkedin-banner.png",
-	render(
-		<PatternBanner width={3384} height={573} {...sharedBannerStyle} fontScale={0.18} />,
-		3384,
-		573,
-	),
+	render(<PatternBanner width={3384} height={573} {...sharedBannerStyle} fontScale={0.18} />, 3384, 573),
 );
 
 // Write zip
@@ -430,6 +401,4 @@ await done;
 
 const zipSize = readFileSync(OUTPUT_ZIP).length;
 const kb = (zipSize / 1024).toFixed(1);
-console.log(
-	`\n✅ elmo-brand-kit.zip (${kb} KB, ${files.length} files) → ${OUTPUT_ZIP}`,
-);
+console.log(`\n✅ elmo-brand-kit.zip (${kb} KB, ${files.length} files) → ${OUTPUT_ZIP}`);

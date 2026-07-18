@@ -42,9 +42,7 @@ const ICONS_DIR = resolve(PUBLIC_DIR, "icons");
 // ---------------------------------------------------------------------------
 
 function loadFontBase64(): string {
-	const fontPath = require.resolve(
-		"@fontsource/titan-one/files/titan-one-latin-400-normal.woff2",
-	);
+	const fontPath = require.resolve("@fontsource/titan-one/files/titan-one-latin-400-normal.woff2");
 	return readFileSync(fontPath).toString("base64");
 }
 
@@ -96,10 +94,7 @@ async function renderPng(element: React.ReactElement, size: number): Promise<Buf
 
 function StandardIcon({ bg, size }: { bg?: string; size: number }) {
 	return (
-		<div
-			tw="flex items-center justify-center w-full h-full"
-			style={{ backgroundColor: bg || "transparent" }}
-		>
+		<div tw="flex items-center justify-center w-full h-full" style={{ backgroundColor: bg || "transparent" }}>
 			<div
 				style={{
 					fontFamily: "Titan One",
